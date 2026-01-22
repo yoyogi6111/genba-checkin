@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
+// Next の仕様で params が Promise 扱いになるケースがあるため await で unwrap する
 export async function GET(
   _req: Request,
   ctx: { params: Promise<{ siteId: string }> }
@@ -9,15 +10,22 @@ export async function GET(
 
   const { data, error } = await supabaseAdmin
     .from("sites")
-    .select("id,name")
+    .select("id, name")
     .eq("id", siteId)
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
+
   if (!data) {
-    return NextResponse.json({ error: "not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "not found" },
+      { status: 404 }
+    );
   }
 
   return NextResponse.json(data);
